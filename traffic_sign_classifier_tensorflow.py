@@ -1,5 +1,5 @@
 # Dataset: German Traffic Sign Benchmarks (http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset)
-# Accuracy: Validation (≈ 0.99), Test (≈ 0.91)
+# Accuracy: Validation (≈ 0.99), Test (≈ 0.91), New images collected manually (≈ 0.40)
 import pickle
 training_file = 'train.p'
 testing_file = 'test.p'
