@@ -1,3 +1,5 @@
+# Dataset : German Traffic Sign Benchmarks (http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset)
+
 import pickle
 training_file = 'train.p'
 testing_file = 'test.p'
