@@ -1,5 +1,5 @@
 # Dataset: German Traffic Sign Benchmarks (http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset)
-# Accuracy: Validation (≈ 0.99), Test (≈ 0.91), New images collected manually (≈ 0.40)
+# Accuracy: Validation (≈ 0.99), Test (≈ 0.94), New images collected manually (≈ 0.66)
 import pickle
 training_file = 'train.p'
 testing_file = 'test.p'
@@ -26,9 +26,8 @@ print("Number of classes =", n_classes)
 import matplotlib.pyplot as plt
 get_ipython().magic('matplotlib inline')
 
-import cv2
 def normalize(img):
-    return cv2.normalize(img, None, 0.0, 1.0, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    return img/255.-0.5
 
 print('Creating distribution of labels in Training data...')
 inputs_per_class = np.bincount(y_train)
@@ -55,25 +54,21 @@ for i in range(n_classes):
 
 import scipy.ndimage
 print('Size of training set: {}'.format(n_train))
-print('Augmenting data...')
+print('Augmenting data by creating rotations of each image.')
+print('Keeping relative number of images same as that represents prior likelihood of each sign.')
 for i in range(len(inputs_per_class)):
     current_count = inputs_per_class[i]
-    
-    if (current_count == max_inputs_for_class):
-        continue
-    
+
     new_features = []
     new_labels = []
     mask = np.where(y_train == i)
-    angle = -15
-    
-    while (current_count < max_inputs_for_class):
+    angle = -10
+    if ((i+1)%10 == 0):
+        print('Creating rotations for class {}...'.format(i))
+    while (angle <= 10):
         for feature in X_train[mask]:
             new_features.append(scipy.ndimage.rotate(feature, angle, reshape=False))
             new_labels.append(i)
-            current_count += 1
-            if (current_count >= max_inputs_for_class):
-                break
         angle += 5
     
     X_train = np.append(X_train, new_features, axis=0)
@@ -99,7 +94,7 @@ X_train, y_train = shuffle(X_train, y_train)
 
 import tensorflow as tf
 
-EPOCHS = 50
+EPOCHS = 30
 BATCH_SIZE = 250
 
 from tensorflow.contrib.layers import flatten
@@ -184,6 +179,7 @@ for i in range(EPOCHS):
         print("Validation Accuracy = {:.3f}".format(validation_accuracy))
         print()
 
+X_test = [image/255. -0.5 for image in X_test]
 test_accuracy = evaluate(X_test, y_test)
 print("Test Accuracy = {:.3f}".format(test_accuracy))
 
@@ -208,5 +204,6 @@ for imgname in imgs:
     
 new_input = np.array(new_input, dtype=np.float32)
 new_input_answers = np.array([8,27,10,13,25,23])
+new_input = [image/255. -0.5 for image in new_input]
 predictions = sess.run(softmax_out, feed_dict={x: new_input})
 print(sess.run(tf.nn.top_k(tf.constant(predictions), k=3)))
